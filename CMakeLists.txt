@@ -36,6 +36,7 @@ add_subdirectory(tests/inject)
 add_subdirectory(tests/constexpr)
 add_subdirectory(tests/arrays)
 add_subdirectory(tests/enums)
+add_subdirectory(tests/submodules)
 # add_subdirectory(tests/skeletal)
 # add_subdirectory(tests/numpy)    # Not ready yet -- need to augment PYB11 to support the buffer protocol to do correctly
 

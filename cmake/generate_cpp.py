@@ -7,7 +7,14 @@ multiple_files = eval(sys.argv[3])
 generatedfiles = sys.argv[4]
 allow_skips = eval(sys.argv[5])
 default_holder_type = sys.argv[6]
-dry_run = eval(sys.argv[7])
+is_submodule = eval(sys.argv[7])
+submodules = sys.argv[8]
+dry_run = eval(sys.argv[9])
+
+if submodules == "False":
+   submodules = []
+else:
+   submodules = submodules.split(";")
 
 # Prepare output directories
 current_pth = "current_" + mod_name
@@ -33,6 +40,8 @@ PYB11generateModule({pyb11_mod_name},
                     multiple_files = {multiple_files},
                     generatedfiles = \"{generatedfiles}\",
                     default_holder_type = \"{default_holder_type}\",
+                    is_submodule = {is_submodule},
+                    submodules = {submodules},
                     dry_run = {dry_run})
 """
 exec(code)

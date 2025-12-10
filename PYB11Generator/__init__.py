@@ -1,7 +1,8 @@
 #-------------------------------------------------------------------------------
-# PYB11Generator
+# PYB11Generator master import file
 #-------------------------------------------------------------------------------
 import inspect, sys, os, subprocess
+
 from .PYB11config import *
 from .PYB11utils import *
 from .PYB11Decorators import *
@@ -21,6 +22,8 @@ def PYB11generateModule(modobj,
                         multiple_files = False,      # Optionally generate multiple pybind11 source files
                         generatedfiles = None,       # file name to create list of generated pybind11 source files if multiple_files = True
                         default_holder_type = None,  # change default holder type for this module
+                        is_submodule = False,        # Is this a submodule?
+                        submodules = [],             # List of submodule names (if any)
                         dry_run = False):            # Only compute the set of .cc files that would be created, but don't generate them (useful for configuration of builds)
     if modname is None:
         modname = modobj.__name__
@@ -40,6 +43,8 @@ def PYB11generateModule(modobj,
     modobj.basedir = basedir
     modobj.basename = basename
     modobj.generatedfiles = generatedfiles
+    modobj.is_submodule = is_submodule
+    modobj.submodules = submodules
     modobj.master_include_file = "PYB11_module_" + basename + ".hh"
     modobj.generatedfiles_list = [tmp_filename]
 
@@ -66,6 +71,11 @@ def PYB11generateModule(modobj,
     # Attributes
     PYB11generateModuleAttrs(modobj)
 
+    # Declare and call binding functions for any submodules.
+    # Submodules must be declared in different PYB11 process
+    # with results linked to this module object file.
+    PYB11generateSubmoduleCalls(modobj)
+
     # Close the module source
     PYB11generateModuleClose(modobj)
 
@@ -88,6 +98,7 @@ def PYB11generateModule(modobj,
 def PYB11generateModuleStart(modobj):
 
     name = modobj.PYB11modulename
+    modlabel = "Submodule" if modobj.is_submodule else "Module"
 
     # Generate module starting comments and include master header
     faccess = "w" if modobj.multiple_files else "a"
@@ -95,7 +106,7 @@ def PYB11generateModuleStart(modobj):
         ss = f.write
         incfile = modobj.master_include_file
         ss(f'''//------------------------------------------------------------------------------
-// Module {name}
+// {modlabel} {name}
 //------------------------------------------------------------------------------
 #include "{incfile}"
 
@@ -106,7 +117,7 @@ def PYB11generateModuleStart(modobj):
         ss = f.write
 
         ss(f"""//------------------------------------------------------------------------------
-// Module {name}
+// {modlabel} {name}
 //------------------------------------------------------------------------------
 #ifndef PYB11_{name}_master_include
 #define PYB11_{name}_master_include
@@ -172,10 +183,15 @@ using namespace pybind11::literals;
 //------------------------------------------------------------------------------
 """)
         if PYB11STLobjs(modobj):
-            ss("void bindModuleSTLtypes(py::module_& mod);\n")
+            ss("void bindModuleSTLtypes(py::module_& mod);\n\n")
+
+        if modobj.submodules:
+            for submodname in modobj.submodules:
+                ss(f"void bindSubmodule_{submodname}(py::module_& submodobj);\n")
+            ss("\n")
 
         PYB11generateClassBindingFunctionDecls(modobj, ss)
-        ss("\n#endif\n")
+        ss("#endif\n")
 
     # On to the module coding
     with open(PYB11filename(modobj.filename), "a") as f:
@@ -187,13 +203,20 @@ using namespace pybind11::literals;
         # Publicists
         PYB11generateModulePublicists(modobj)
 
-        # Declare the module
-        ss("""//------------------------------------------------------------------------------
+        # Declare the module/submodule
+        if modobj.is_submodule:
+            ss(f"""//------------------------------------------------------------------------------
+// Bind submodule methods and objects
+//------------------------------------------------------------------------------
+void bindSubmodule_{name}(py::module_& m) {{
+""")
+
+        else:
+            ss(f"""//------------------------------------------------------------------------------
 // Make the module
 //------------------------------------------------------------------------------
-PYBIND11_MODULE(%(name)s, m) {
-""" % {"name"     : name,
-})
+PYBIND11_MODULE({name}, m) {{
+""")
 
         doc = inspect.getdoc(modobj)
         if doc:
@@ -220,6 +243,26 @@ PYBIND11_MODULE(%(name)s, m) {
             for othermod in othermods:
                 if othermod != name:
                     ss('  py::module::import("%s");\n' % othermod)
+            ss("\n")
+
+    return
+
+#-------------------------------------------------------------------------------
+# PYB11generateSubmoduleCalls
+#
+# Generate calls to functions binding submodules
+#-------------------------------------------------------------------------------
+def PYB11generateSubmoduleCalls(modobj):
+
+    if modobj.submodules:
+        name = modobj.PYB11modulename
+        with open(PYB11filename(modobj.filename), "a") as f:
+            ss = f.write
+            ss("  // Declare submodules and call their binding methods\n")
+            for submodname in modobj.submodules:
+                ss(f'  auto m_{submodname}obj = m.def_submodule("{submodname}", "Submodule {submodname} of {name}");')
+            for submodname in modobj.submodules:
+                ss(f'  bindSubmodule_{submodname}(m_{submodname}obj);')
             ss("\n")
 
     return
