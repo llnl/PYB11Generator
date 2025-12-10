@@ -149,10 +149,10 @@ function(PYB11Generator_add_module package_name)
   endif()
   
   if (${package_name}_IS_SUBMODULE)
-    set(BUILD_SHARED_LIB ON)
+    set(BUILD_SHARED_LIB OFF)
     list(APPEND ${package_name}_COMPILE_OPTIONS "-fPIC")
   else()
-    set(BUILD_SHARED_LIB OFF)
+    set(BUILD_SHARED_LIB ON)
   endif()
 
   # Add any submodule targets to our links
@@ -199,7 +199,7 @@ function(PYB11Generator_add_module package_name)
                     DEPENDS_ON   ${${package_name}_DEPENDS} ${${package_name}_FILE_DEPENDS}
                     INCLUDES     ${${package_name}_INCLUDES} ${CMAKE_CURRENT_BINARY_DIR}/current_${${package_name}_MODULE}
                     OUTPUT_NAME  ${${package_name}_MODULE}
-                    CLEAR_PREFIX TRUE
+                    CLEAR_PREFIX ${BUILD_SHARED_LIB}
                     SHARED       ${BUILD_SHARED_LIB})
     target_link_libraries(${${package_name}_MODULE} PRIVATE pybind11::module pybind11::lto pybind11::windows_extras)
     #pybind11_extension(${${package_name}_MODULE})
