@@ -465,6 +465,12 @@ def PYB11filename(filename):
     return os.devnull if PYB11config().dry_run else filename
 
 #-------------------------------------------------------------------------------
+# Check if module names match (taking into account potentially being a submodule)
+#-------------------------------------------------------------------------------
+def PYB11modmatch(modobj, amodname):
+    return modobj.PYB11modulename.split(".")[-1] == amodname.split(".")[-1]
+
+#-------------------------------------------------------------------------------
 # PYB11attrs
 #
 # Read the possible PYB11 generation attributes from the obj

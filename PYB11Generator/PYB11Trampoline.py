@@ -23,9 +23,9 @@ def PYB11generateModuleTrampolines(modobj):
         klassattrs = PYB11attrs(klass)
         template_klass = len(klassattrs["template"]) > 0
         mods = klassattrs["module"]
-        if ((template_klass or not klassattrs["ignore"]) and                 # ignore flag (except for template class)?
-            (klassattrs["pyname"] not in known_trampolines) and              # has this trampoline been generated?
-            ((klass not in mods) or mods[klass] == modobj.PYB11modulename)): # is this class imported from another mod?
+        if ((template_klass or not klassattrs["ignore"]) and              # ignore flag (except for template class)?
+            (klassattrs["pyname"] not in known_trampolines) and           # has this trampoline been generated?
+            ((klass not in mods) or PYB11modmatch(modobj, mods[klass]))): # is this class imported from another mod?
             newklasses.append((name, klass))
             known_trampolines.append(klassattrs["pyname"])
     klasses = newklasses

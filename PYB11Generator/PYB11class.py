@@ -30,7 +30,7 @@ def PYB11generateClassBindingFunctionDecls(modobj, ss):
            else:
                klassattrs = PYB11attrs(klass)
                mods = klassattrs["module"]
-               if ((klass not in mods) or mods[klass] == modobj.PYB11modulename): # is this class imported from another mod?
+               if ((klass not in mods) or PYB11modmatch(modobj, mods[klass])): # is this class imported from another mod?
                    ss("void bind%(pyname)s(py::module_& m);\n" % klassattrs)
 
                    # Check for any nested class scope classes
@@ -67,7 +67,7 @@ def PYB11generateModuleClassBindingCalls(modobj):
                     else:
                         klassattrs = PYB11attrs(klass)
                         mods = klassattrs["module"]
-                        if ((klass not in mods) or mods[klass] == modobj.PYB11modulename): # is this class imported from another mod?
+                        if ((klass not in mods) or PYB11modmatch(modobj, mods[klass])): # is this class imported from another mod?
                             ss("  bind%(pyname)s(m);\n" % klassattrs)
             ss("\n")
     return
@@ -88,7 +88,7 @@ def PYB11generateModuleClassFuncs(modobj):
         else:
             klassattrs = PYB11attrs(klass)
             mods = klassattrs["module"]
-            if ((klass not in mods) or mods[klass] == modobj.PYB11modulename): # is this class imported from another mod?
+            if ((klass not in mods) or PYB11modmatch(modobj, mods[klass])): # is this class imported from another mod?
                 PYB11generateClass(modobj, klass, klassattrs, ss)
 
     for kname, klass in klasses:

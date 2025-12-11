@@ -20,7 +20,7 @@ def PYB11generateModulePublicists(modobj):
         if (PYB11protectedClass(klass) and
             ((template_klass or not klassattrs["ignore"]) and                 # ignore flag (except for template class)?
              (klassattrs["pyname"] not in known_publicists) and               # has this trampoline been generated?
-            ((klass not in mods) or mods[klass] == modobj.PYB11modulename))): # is this class imported from another mod?
+            ((klass not in mods) or PYB11modmatch(modobj, mods[klass])))):    # is this class imported from another mod?
             known_publicists.append(klassattrs["pyname"])
 
             if modobj.multiple_files:

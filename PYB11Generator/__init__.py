@@ -260,9 +260,9 @@ def PYB11generateSubmoduleCalls(modobj):
             ss = f.write
             ss("  // Declare submodules and call their binding methods\n")
             for submodname in modobj.submodules:
-                ss(f'  auto m_{submodname}obj = m.def_submodule("{submodname}", "Submodule {submodname} of {name}");')
+                ss(f'  auto m_{submodname}_obj = m.def_submodule("{submodname}", "Submodule {submodname} of {name}");\n')
             for submodname in modobj.submodules:
-                ss(f'  bindSubmodule_{submodname}(m_{submodname}obj);')
+                ss(f'  bindSubmodule_{submodname}(m_{submodname}_obj);\n')
             ss("\n")
 
     return
