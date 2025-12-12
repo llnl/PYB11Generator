@@ -10,11 +10,17 @@ This section describes the special functions and classes defined in PYB11Generat
 
   Inspect the function and class definitions in ``pymodule``, and write a C++ file containing pybind11 statements to bind those interfaces.
 
-  * ``pymodule``: the module to be introspected for the interface
+  :param pymodule: the module to be introspected for the interface
 
-  * ``modname``: optionally specify a different name for the generated Python module to be imported under.  Defaults to ``pymodule``.
+  * ``modname``: optionally specify a different name for the generated Python module to be imported under.  Defaults ``None`` results in `<pymodule>``.
 
-  * ``filename``: a file name for the generated C++ file.  If specified, the output is written to the given name, otherwise output will be written to ``pymodule.cc``
+  * ``filename``:  a file name for the generated C++ file.  If specified, the output is written to the given name, otherwise output will be written to ``<pymodule>.cc``
+
+  * ``multiple_files``: optionally create multiple pybind11 source files to compile rather than a single monolithic output file
+
+  * ``generatedfiles``: output filename to hold list of generatted pybind11 files for compilation (default ``None`` results in ``<pymodname>_PYB11_generated_files``)
+
+    
 
 .. #############################################################################
 .. py:function:: PYB11TemplateFunction(func_template, template_parameters[, cppname = None, pyname = None, docext = ""])
