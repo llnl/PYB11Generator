@@ -15,7 +15,7 @@ As an example, suppose we want to have two submodules ``Asub`` and ``Bsub`` of m
    |-- Asub
    |-- Bsub
 
-We can write three normal module Python PYB11Generator files for binding each of these modules as normal.
+We can write three Python PYB11Generator module files for binding each of these modules as normal.
 
 ``my_module_PYB11.py``::
 
@@ -34,7 +34,6 @@ We can write three normal module Python PYB11Generator files for binding each of
       def pyinit(self):
           "Default constructor"
 
-      @PYB11virtual
       def func(self, x="int"):
           "A::func"
           return "int"
@@ -50,7 +49,22 @@ We can write three normal module Python PYB11Generator files for binding each of
       def pyinit(self):
           "Default constructor"
 
-      @PYB11virtual
       def func(self, x="int"):
           "B::func"
           return "int"
+
+Now we can create the module ``my_module`` with its submodules ``Asub`` and ``Bsub`` by creating three CMake targets::
+
+``CMakeLists.txt``::
+
+  PYB11Generator_add_module(my_module
+    SUBMODULES Asub Bsub
+    DEPENDS Asub Bsub)
+
+  PYB11Generator_add_module(Asub
+    IS_SUBMODULE ON)
+
+  PYB11Generator_add_module(Bsub
+    IS_SUBMODULE ON)
+
+Note that our only new requirements are that we need to specify to the rule building ``my_module`` that it has two submodules, while for both ``Asub`` and ``Bsub`` we need to flip on the ``IS_SUBMODULE`` flag to treat them as submodules. At compilation time this results in ``Asub`` and ``Bsub`` being built as static libraries which are linked to the final (now single) dynamic module ``my_module``.
