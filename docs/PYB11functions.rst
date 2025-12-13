@@ -20,9 +20,9 @@ This section describes the special functions and classes defined in PYB11Generat
 
   :param generatedfiles: output filename to hold list of generatted pybind11 files for compilation (default ``None`` results in ``<pymodname>_PYB11_generated_files``)
 
-  :param default_holder_type: optionally override the holder type for new objects (default ``None`` results in ``py::smart_holder``, see `pybind11 docs <https://pybind11.readthedocs.io/en/stable/advanced/smart_ptrs.html`_).
+  :param default_holder_type: optionally override the holder type for new objects (default ``None`` results in ``py::smart_holder``, see `pybind11 docs <https://pybind11.readthedocs.io/en/stable/advanced/smart_ptrs.html>`_).
 
-  :param is_submodule: optionally specify this module should be treated and bound as a submodule (default ``False``, see `PYB11submodules`_.)
+  :param is_submodule: optionally specify this module should be treated and bound as a submodule (default ``False``, see :ref:`submodules`_.)
 
   :param submodules: optionally specify a set of submodules of this module (default ``[]``, see `PYB11submodules`_.)
 
