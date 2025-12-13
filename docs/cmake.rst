@@ -1,4 +1,4 @@
-.. _cmake
+.. _PYB11Cmake
 
 ===========================================
 Using CMake to build PYB11Generator modules
