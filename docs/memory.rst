@@ -19,7 +19,7 @@ When pybind11 creates a new instance of a bound C++ class, it uses a smart point
       def pyinit(self):
           "Default constructor"
 
-This tells pybind11 any new instance of ``A`` created from python should be managed by ``std::shared_ptr``.  pybind11 supports ``std::unique_ptr`` and ``std::shared_ptr`` without further work.  It is possible to use any reference counting smart pointer for this purpose, but types other than ``std::unique_ptr`` and ``std::shared_ptr`` require more information be specified to pybind11.  PYB11 does not provide any convenience methods for adding that additional information, but it can be done directly with pybind11 as described in the `pybind11 documentation <https://pybind11.readthedocs.io/en/stable/advanced/smart_ptrs.html#custom-smart-pointers>`_ .
+This tells pybind11 any new instance of ``A`` created from python should be managed by ``std::shared_ptr``.  pybind11 supports ``std::unique_ptr``, ``std::shared_ptr``, and ``py::smart_holder`` without further work.  It is possible to use any reference counting smart pointer for this purpose, but types other than these three require more information be specified to pybind11.  PYB11 does not provide any convenience methods for adding that additional information, but it can be done directly with pybind11 as described in the `pybind11 documentation <https://pybind11.readthedocs.io/en/stable/advanced/smart_ptrs.html#custom-smart-pointers>`_ .
 
 .. Note::
 
