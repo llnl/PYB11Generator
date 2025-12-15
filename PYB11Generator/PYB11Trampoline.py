@@ -23,9 +23,9 @@ def PYB11generateModuleTrampolines(modobj):
         klassattrs = PYB11attrs(klass)
         template_klass = len(klassattrs["template"]) > 0
         mods = klassattrs["module"]
-        if ((template_klass or not klassattrs["ignore"]) and                 # ignore flag (except for template class)?
-            (klassattrs["pyname"] not in known_trampolines) and              # has this trampoline been generated?
-            ((klass not in mods) or mods[klass] == modobj.PYB11modulename)): # is this class imported from another mod?
+        if ((template_klass or not klassattrs["ignore"]) and              # ignore flag (except for template class)?
+            (klassattrs["pyname"] not in known_trampolines) and           # has this trampoline been generated?
+            ((klass not in mods) or PYB11modmatch(modobj, mods[klass]))): # is this class imported from another mod?
             newklasses.append((name, klass))
             known_trampolines.append(klassattrs["pyname"])
     klasses = newklasses
@@ -41,11 +41,11 @@ def PYB11generateModuleTrampolines(modobj):
                 cppbasename = cppbasename.split("<")[0]
             assert cppbasename
             filename = os.path.join(modobj.basedir, modobj.basename + f"_{cppbasename}_trampoline.hh")
-            with open(filename, "w") as f:
+            with open(PYB11filename(filename), "w") as f:
                 ss = f.write
                 PYB11generateTrampoline(modobj, klass, ss)
         else:
-            with open(modobj.filename, "a") as f:
+            with open(PYB11filename(modobj.filename), "a") as f:
                 ss = f.write
                 PYB11generateTrampoline(modobj, klass, ss)
     return
@@ -130,7 +130,10 @@ def PYB11generateTrampoline(modobj, klass, ssout):
     bklassnames[0] = "PYB11self"
 
     # Class name
-    ss("""class PYB11Trampoline%(cppname)s: public %(full_cppname)s {
+    ss("class PYB11Trampoline%(cppname)s: public %(full_cppname)s" % klassattrs)
+    if klassattrs["holder"] == "py::smart_holder":
+        ss(", public py::trampoline_self_life_support")
+    ss(""" {
 public:
   using %(full_cppname)s::%(cppname)s;   // inherit constructors
   typedef %(full_cppname)s PYB11self;    // Necessary to protect macros below from names with commas in them

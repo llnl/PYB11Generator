@@ -23,8 +23,10 @@ PYB11Generator is a python based code generator that creates `pybind11 <https://
    functions
    classes
    enums
+   attributes
    memory
    stl
+   submodules
    complications
    cmake
    PYB11variables

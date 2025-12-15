@@ -13,7 +13,7 @@ def PYB11generateModuleEnums(modobj):
     globs, locs = globals(), locals()
     enums = [x for x in dir(modobj) if isinstance(eval("modobj.%s" % x, globs, locs), PYB11enum)]
     if enums:
-        with open(modobj.filename, "a") as f:
+        with open(PYB11filename(modobj.filename), "a") as f:
             ss = f.write
             ss("  //..............................................................................\n")
             ss("  // enum types\n")
@@ -35,6 +35,7 @@ class PYB11enum:
                  namespace = "",
                  cppname = None,
                  export_values = False,
+                 native_type = "enum.IntEnum",
                  doc = None):
         self.values = values
         self.name = name
@@ -43,6 +44,7 @@ class PYB11enum:
             self.namespace += "::"
         self.cppname = cppname
         self.export_values = export_values
+        self.native_type = native_type
         self.doc = doc
         return
 
@@ -66,10 +68,12 @@ class PYB11enum:
             klass = False
 
         if klass:
-            ss('  py::enum_<%(namespace)s%(cppname)s::' % klassattrs)
+            ss('  py::native_enum<%(namespace)s%(cppname)s::' % klassattrs)
             ss('%(cppname)s>(obj, "%(pyname)s"' % enumattrs)
         else:
-            ss('  py::enum_<%(namespace)s%(cppname)s>(m, "%(pyname)s"' % enumattrs)
+            ss('  py::native_enum<%(namespace)s%(cppname)s>(m, "%(pyname)s"' % enumattrs)
+
+        ss(', "{}"'.format(self.native_type))
 
         if self.doc:
             ss(', "%s")\n' % self.doc)
@@ -83,9 +87,9 @@ class PYB11enum:
             ss('%(namespace)s%(cppname)s::' % enumattrs + value + ')\n')
 
         if self.export_values:
-            ss('    .export_values();\n\n')
+            ss('    .export_values().finalize();\n\n')
         else:
-            ss('    ;\n\n')
+            ss('    .finalize();\n\n')
 
         return
 

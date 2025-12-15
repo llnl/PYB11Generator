@@ -1,5 +1,6 @@
+from .PYB11config import *
 from .PYB11Decorators import *
-import inspect, io, types, itertools, collections
+import inspect, io, types, itertools, collections, os
 
 #-------------------------------------------------------------------------------
 # PYB11inject
@@ -458,6 +459,18 @@ def PYB11findAllIncludes(modobj):
     return list(collections.OrderedDict.fromkeys(result))
 
 #-------------------------------------------------------------------------------
+# Wrap opening an output file and creating it's stream to support dry_run
+#-------------------------------------------------------------------------------
+def PYB11filename(filename):
+    return os.devnull if PYB11config().dry_run else filename
+
+#-------------------------------------------------------------------------------
+# Check if module names match (taking into account potentially being a submodule)
+#-------------------------------------------------------------------------------
+def PYB11modmatch(modobj, amodname):
+    return modobj.PYB11modulename.split(".")[-1] == amodname.split(".")[-1]
+
+#-------------------------------------------------------------------------------
 # PYB11attrs
 #
 # Read the possible PYB11 generation attributes from the obj
@@ -469,7 +482,7 @@ def PYB11attrs(obj):
          "ignore"                : False,
          "namespace"             : "",
          "singleton"             : False,
-         "holder"                : None,
+         "holder"                : PYB11config().default_holder_type,
          "exposeBaseOverloads"   : True,
          "dynamic_attr"          : None,
          "virtual"               : False,

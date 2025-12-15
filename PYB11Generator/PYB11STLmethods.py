@@ -4,6 +4,7 @@
 # Thin wrappers to generate the pybind11 STL functions.
 #-------------------------------------------------------------------------------
 import os, inspect
+from .PYB11config import *
 from .PYB11utils import *
 
 #-------------------------------------------------------------------------------
@@ -14,10 +15,12 @@ class PYB11_bind_vector:
     def __init__(self,
                  element,            # template element type for vector
                  opaque = False,     # should we make the type opaque?
-                 local = None):      # should the opaque choice be module local?
+                 local = None,       # should the opaque choice be module local?
+                 holder = None):     # optionally override holder used
         self.element = element
         self.opaque = opaque
         self.local = local
+        self.holder = holder if holder else PYB11config().default_holder_type
         return
 
     def PYB11opaqueTypes(self, modobj, ss, name):
@@ -26,7 +29,7 @@ class PYB11_bind_vector:
         return
 
     def __call__(self, modobj, ss, name):
-        ss('py::bind_vector<std::vector<' + self.element + '>>(m, "' + name + '"')
+        ss('py::bind_vector<std::vector<' + self.element + '>, ' + self.holder + '>(m, "' + name + '"')
         if not self.local is None:
             ss(', py::module_local(')
             if self.local:
@@ -45,11 +48,13 @@ class PYB11_bind_map:
                  key,                # template key type
                  value,              # template value type
                  opaque = False,     # should we make the container opaque
-                 local = None):      # should the opaque choice be module local?
+                 local = None,       # should the opaque choice be module local?
+                 holder = None):     # optionally override holder used
         self.key = key
         self.value = value
         self.opaque = opaque
         self.local = local
+        self.holder = holder if holder else PYB11config().default_holder_type
         return
 
     def PYB11opaqueTypes(self, modobj, ss, name):
@@ -59,7 +64,7 @@ class PYB11_bind_map:
         return
 
     def __call__(self, modobj, ss, name):
-        ss('py::bind_map<std::map<' + self.key + ', ' + self.value + '>>(m, "' + name + '"')
+        ss('py::bind_map<std::map<' + self.key + ', ' + self.value + '>, ' + self.holder + '>(m, "' + name + '"')
         if not self.local is None:
             ss(', py::module_local(')
             if self.local:
@@ -90,7 +95,7 @@ def PYB11generateModuleSTLmethod(modobj, stlobjs):
     modobj.generatedfiles_list.append(filename)
     name = modobj.PYB11modulename
     modincludefile = modobj.master_include_file
-    with open(os.path.join(modobj.basedir, filename), "w") as f:
+    with open(PYB11filename(os.path.join(modobj.basedir, filename)), "w") as f:
         ss = f.write
         ss(f'''//------------------------------------------------------------------------------
 // Bind STL for {name} module
@@ -113,21 +118,21 @@ void bindModuleSTLtypes(py::module_& m) {{
 def PYB11generateModuleSTL(modobj):
     stuff = PYB11STLobjs(modobj)
     if stuff:
-        with open(modobj.filename, "a") as f:
+        with open(PYB11filename(modobj.filename), "a") as f:
             ss = f.write
             ss("  //..............................................................................\n")
             ss("  // STL bindings\n")
 
         if False: # modobj.multiple_files:
             # Multiple files
-            with open(modobj.filename, "a") as f:
+            with open(PYB11filename(modobj.filename), "a") as f:
                 ss = f.write
                 ss("  bindModuleSTLtypes(m);\n\n")
             PYB11generateModuleSTLmethod(modobj, stuff)
 
         else:
             # Monolithic file
-            with open(modobj.filename, "a") as f:
+            with open(PYB11filename(modobj.filename), "a") as f:
                 ss = f.write
                 for (name, obj) in stuff:
                     ss("  ")

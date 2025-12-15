@@ -1,4 +1,4 @@
-.. _cmake
+.. _PYB11Cmake:
 
 ===========================================
 Using CMake to build PYB11Generator modules
@@ -65,6 +65,9 @@ The full function specification for ``PYB11Generator_add_module`` is::
                                COMPILE_OPTIONS  ...
                                MULTIPLE_FILES   ON/OFF
                                GENERATED_FILES  ...
+                               HOLDER_TYPE      ...
+                               IS_SUBMODULE     ON/OFF
+                               SUBMODULES       ...
                                USE_BLT          ON/OFF
                                PYTHONPATH       ...
                                ALLOW_SKIPS      ON/OFF)
@@ -104,6 +107,15 @@ MULTIPLE_FILES  ON/OFF (optional, default OFF) :
 GENERATED_FILES <arg> (optional) :
   Name for output file containing the list of C++ pybind11 output files
 
+HOLDER_TYPE ... (optional, default py::smart_holder)
+    Specify the holder_type for pybind11 to manage new C++ wrapped objects.
+
+IS_SUBMODULE  ON/OFF (optional, default OFF) :
+    Optionally specify that this module should be bound as a submodule
+
+SUBMODULES ... (optional, default empty list)
+    Optional CMake list of submodules to be defined as part of this module
+
 USE_BLT ON/OFF (optional, default OFF) :
   For those using the BLT Cmake extension (https://llnl-blt.readthedocs.io/),
   which does not play well with standard CMake add_library options.
@@ -119,7 +131,7 @@ ALLOW_SKIPS ON/OFF (optional, default OFF) :
 
 .. Note::
 
-   ``PYB11Generator_add_module`` only looks at the ``SOURCE`` Python file (default ``<package_name>_PYB11.py``.  However, that file may in turn import as many other Python files as desired to expose more interface as part of the module, so the user should feel free to organize their PYB11Generator bindings as desired for clarity.  A typical pattern would be to have the top-level module ``<package_name>_PYB11.py`` import individual class bindings from separate Python files for each bound class, for instance.  Such dependencies should be noted and cause recompiling as appropriate.
+   ``PYB11Generator_add_module`` only looks at the ``SOURCE`` Python file (default ``<package_name>_PYB11.py``.  However, that file may in turn import as many other Python files as desired to expose more interface as part of the module, so the user should feel free to organize their PYB11Generator bindings as desired for clarity.  A typical pattern would be to have the top-level module ``<package_name>_PYB11.py`` import individual class bindings from separate Python files for each bound class, for instance.  Such dependencies are automatically followed in CMake and will cause reconfiguration/recompiling as appropriate.
 
 .. Note::
 
@@ -130,3 +142,13 @@ ALLOW_SKIPS ON/OFF (optional, default OFF) :
 
    MULTIPLE_FILES OFF :
      PYB11Generator runs at compile time, generating a monolithic C++ pybind11 source file and one header per module.
+
+.. Note::
+
+   The use of the submodules flags (``IS_SUBMODULE`` and ``SUBMODULES``) implies changes to the way the resulting module is treated and link requirements:
+
+   * IS_SUBMODULE ON will cause the module bindings to be linked as a static library, and this submodule must be included in the SUBMODULES of another module to be importable.
+
+   * Setting SUBMODULES to a non-empty list requires that the named submodules are built by another target of a PYB11Generator CMake rule (i.e., something built with IS_SUBMODULE ON), and those targets should also be linked to this module via the DEPENDS option.
+
+   See the discussion in :ref:`submodules` for more discussion and an example of these options.
