@@ -131,7 +131,7 @@ ALLOW_SKIPS ON/OFF (optional, default OFF) :
 
 .. Note::
 
-   ``PYB11Generator_add_module`` only looks at the ``SOURCE`` Python file (default ``<package_name>_PYB11.py``.  However, that file may in turn import as many other Python files as desired to expose more interface as part of the module, so the user should feel free to organize their PYB11Generator bindings as desired for clarity.  A typical pattern would be to have the top-level module ``<package_name>_PYB11.py`` import individual class bindings from separate Python files for each bound class, for instance.  Such dependencies should be noted and cause recompiling as appropriate.
+   ``PYB11Generator_add_module`` only looks at the ``SOURCE`` Python file (default ``<package_name>_PYB11.py``.  However, that file may in turn import as many other Python files as desired to expose more interface as part of the module, so the user should feel free to organize their PYB11Generator bindings as desired for clarity.  A typical pattern would be to have the top-level module ``<package_name>_PYB11.py`` import individual class bindings from separate Python files for each bound class, for instance.  Such dependencies are automatically followed in CMake and will cause reconfiguration/recompiling as appropriate.
 
 .. Note::
 
