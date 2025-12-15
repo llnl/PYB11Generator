@@ -751,7 +751,7 @@ pybind11 assumes bound objects are destructible, but for singletons such as ``As
       def where_am_I(self):
           return
 
-This example also involves setting a policy for handling the memory of the ``Asingleton*`` returned by ``Asingleton.instance()``: these sorts of memory management details are discussed in :ref:`return-policies`.
+This example also involves setting a policy for handling the memory of the ``Asingleton&`` returned by ``Asingleton.instance()``: these sorts of memory management details are discussed in :ref:`return-policies`.
 
 .. _class-templates:
 
