@@ -728,18 +728,17 @@ Suppose we have declared a C++ class to be a singleton object (i.e., declared al
 .. code-block:: cpp
 
   class Asingleton {
+
   public:
-    static A* instance() { return instanceptr; }
+    static Asingleton& instance()       { static Asingleton theInstance; return theInstance; }
+    void where_am_I()             const { printf("A instance at %p\\n", (void*) &Asingleton::instance()); }
 
   private:
-    static A* instanceptr;
-    A();
-    A(const A&);
-    A& operator=(const A&);
-    ~A();
+    Asingleton()                        { printf("Asingleton::Asingleton()\\n"); }
+    ~Asingleton()                       { printf("Asingleton::~Asingleton()\\n"); }
   };
 
-pybind11 (via its use of ``std::unique_ptr`` to hold Python instances) assumes bound objects are destructible, but for singletons such as ``Asingleton`` above the destructor is private.  We must notify pybind11 that singletons such as this are different (as discussed in pybind11 for :ref:`pybind11:classes_with_non_public_destructors`) -- PYB11Generator accomplishes this via the decorator ``@PYB11singleton`` like so::
+pybind11 assumes bound objects are destructible, but for singletons such as ``Asingleton`` above the destructor is private.  We must notify pybind11 that singletons such as this are different (as discussed in pybind11 for :ref:`pybind11:classes_with_non_public_destructors`) -- PYB11Generator accomplishes this via the decorator ``@PYB11singleton`` like so::
 
   @PYB11singleton
   class Asingleton:
@@ -747,9 +746,12 @@ pybind11 (via its use of ``std::unique_ptr`` to hold Python instances) assumes b
       @PYB11static
       @PYB11returnpolicy("reference")
       def instance(self):
-          return "Asingleton*"
+          return "Asingleton&"
 
-This example also involves setting a policy for handling the memory of the ``Asingleton*`` returned by ``A.instance``: these sorts of memory management details are discussed in :ref:`return-policies`.
+      def where_am_I(self):
+          return
+
+This example also involves setting a policy for handling the memory of the ``Asingleton*`` returned by ``Asingleton.instance()``: these sorts of memory management details are discussed in :ref:`return-policies`.
 
 .. _class-templates:
 
