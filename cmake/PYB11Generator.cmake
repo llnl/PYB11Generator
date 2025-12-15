@@ -129,23 +129,14 @@ function(PYB11Generator_add_module package_name)
   if (NOT DEFINED ${package_name}_SOURCE)
     set(${package_name}_SOURCE "${${package_name}_MODULE}_PYB11.py")
   endif()
-  if (NOT DEFINED ${package_name}_MULTIPLE_FILES)
-    set(${package_name}_MULTIPLE_FILES "OFF")
-  endif()
   if (NOT DEFINED ${package_name}_GENERATED_FILES)
     set(${package_name}_GENERATED_FILES "${package_name}_PYB11_generated_files")
   endif()
   if (NOT DEFINED ${package_name}_HOLDER_TYPE)
     set(${package_name}_HOLDER_TYPE "py::smart_holder")
   endif()
-  if (NOT DEFINED ${package_name}_IS_SUBMODULE)
-    set(${package_name}_IS_SUBMODULE "OFF")
-  endif()
   if (NOT DEFINED ${package_name}_SUBMODULES)
     set(${package_name}_SUBMODULES "")
-  endif()
-  if (NOT DEFINED ${package_name}_ALLOW_SKIPS)
-    set(${package_name}_ALLOW_SKIPS "OFF")
   endif()
   
   if (${package_name}_IS_SUBMODULE)
@@ -319,26 +310,26 @@ macro(PYB11_GENERATE_BINDINGS package_name module_name PYB11_SOURCE GENERATED_FI
   # message("** ALLOW_SKIPS: ${${package_name}_ALLOW_SKIPS}")
 
   # Parse some options and turn them from CMake to Python parlance
-  if(${${package_name}_MULTIPLE_FILES})
-    set(${package_name}_MULTIPLE_FILES "True")
-  else()
-    set(${package_name}_MULTIPLE_FILES "False")
+  set(${package_name}_multiple_files_inp "False")
+  if (${${package_name}_MULTIPLE_FILES})
+    set(${package_name}_multiple_files_inp "True")
   endif()
+
+  set(${package_name}_submodule_inp "False")
   if (${${package_name}_IS_SUBMODULE})
-    set(${package_name}_IS_SUBMODULE "True")
-  else()
-    set(${package_name}_IS_SUBMODULE "False")
+    set(${package_name}_submodule_inp "True")
   endif()
+
   list(LENGTH ${package_name}_SUBMODULES numSubmodules)
   if (numSubmodules EQUAL 0)
     set(SUBMODULES "False")
   else()
     set(SUBMODULES "${${package_name}_SUBMODULES}")
   endif()
-  if(${${package_name}_ALLOW_SKIPS})
-    set(${package_name}_ALLOW_SKIPS "True")
-  else()
-    set(${package_name}_ALLOW_SKIPS "False")
+
+  set(${package_name}_allow_skips_inp "False")
+  if (${${package_name}_ALLOW_SKIPS})
+    set(${package_name}_allow_skips_inp "True")
   endif()
 
   # Places we need in the Python path
@@ -359,7 +350,7 @@ macro(PYB11_GENERATE_BINDINGS package_name module_name PYB11_SOURCE GENERATED_FI
 
     set(ENV{PYTHONPATH} "${PYTHON_ENV}")
     execute_process(
-      COMMAND ${PYTHON_EXE} ${PYB11GENERATOR_ROOT_DIR}/cmake/generate_cpp.py ${pyb11_module} ${module_name} ${${package_name}_MULTIPLE_FILES} ${${package_name}_GENERATED_FILES} ${${package_name}_ALLOW_SKIPS} ${${package_name}_HOLDER_TYPE} ${${package_name}_IS_SUBMODULE} "${SUBMODULES}" "True"
+      COMMAND ${PYTHON_EXE} ${PYB11GENERATOR_ROOT_DIR}/cmake/generate_cpp.py ${pyb11_module} ${module_name} ${${package_name}_multiple_files_inp} ${${package_name}_GENERATED_FILES} ${${package_name}_allow_skips_inp} ${${package_name}_HOLDER_TYPE} ${${package_name}_submodule_inp} "${SUBMODULES}" "True"
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
 
@@ -394,7 +385,7 @@ macro(PYB11_GENERATE_BINDINGS package_name module_name PYB11_SOURCE GENERATED_FI
   # Create the custom target to generate the pybind11 source at build time
   add_custom_target(
     ${module_name}_src ALL
-    COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH="${PYTHON_ENV}" ${PYTHON_EXE} ${PYB11GENERATOR_ROOT_DIR}/cmake/generate_cpp.py ${pyb11_module} ${module_name} ${${package_name}_MULTIPLE_FILES} ${${package_name}_GENERATED_FILES} ${${package_name}_ALLOW_SKIPS} ${${package_name}_HOLDER_TYPE} ${${package_name}_IS_SUBMODULE} "${SUBMODULES}" "False"
+    COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=${PYTHON_ENV} ${PYTHON_EXE} ${PYB11GENERATOR_ROOT_DIR}/cmake/generate_cpp.py ${pyb11_module} ${module_name} ${${package_name}_multiple_files_inp} ${${package_name}_GENERATED_FILES} ${${package_name}_allow_skips_inp} ${${package_name}_HOLDER_TYPE} ${${package_name}_submodule_inp} "${SUBMODULES}" "False"
     BYPRODUCTS ${GENERATED_FILES}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     VERBATIM
