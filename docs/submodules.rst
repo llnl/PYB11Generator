@@ -65,4 +65,4 @@ Now we can create the module ``my_module`` with its submodules ``Asub`` and ``Bs
   PYB11Generator_add_module(Bsub
     IS_SUBMODULE ON)
 
-Note that our only new requirements are that we need to specify to the rule building ``my_module`` that it has two submodules, while for both ``Asub`` and ``Bsub`` we need to flip on the ``IS_SUBMODULE`` flag to treat them as submodules. At compilation time this results in ``Asub`` and ``Bsub`` being built as static libraries which are linked to the final (now single) dynamic module ``my_module``.
+Note that our only new requirements are that we need to specify to the rule building ``my_module`` that it has two submodules, while for both ``Asub`` and ``Bsub`` we need to flip on the ``IS_SUBMODULE`` flag to treat them as submodules. At compilation time this results in ``Asub`` and ``Bsub`` being built as static libraries which are linked to the final dynamic module ``my_module``.
