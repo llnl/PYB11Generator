@@ -29,6 +29,8 @@ This tells pybind11 any new instance of ``A`` created from python should be mana
 
    The old default of ``std::unique_ptr`` can be utilized by decorating a class with either ``@PYB11holder("std::unique_ptr")`` or more succinctly as ``PYB11holder(None)``.
 
+   If you want to change the default holder type for all classes in a given module, this can be accomplished by setting the ``default_holder_type`` to the desired type (as a string) in the call to ``PYB11generateModule`` (see :ref:`PYB11-functions`). If using CMake there is also an optional ``HOLDER_TYPE`` argument to the CMake function ``PYB11Generator_add_module`` that accomplishes this (see :ref:`PYB11Cmake`).
+
 .. _return-policies:
 
 Return value policies
