@@ -600,6 +600,10 @@ def PYB11generateClass(modobj, klass, klassattrs, ssout,
     if klassattrs["dynamic_attr"]:
         ss(", py::dynamic_attr()")
 
+    # Is this class module_local?
+    if klassattrs["module_local"]:
+        ss(", py::module_local()")
+
     # Close the class declaration and call the function to bind all its methods
     ss(");\n")
 

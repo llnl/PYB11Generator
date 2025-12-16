@@ -498,6 +498,7 @@ def PYB11attrs(obj):
          "template"              : (),
          "template_dict"         : {},
          "module"                : {},
+         "module_local"          : False,
          "operator"              : False}
 
     # A few special funtion mappings
