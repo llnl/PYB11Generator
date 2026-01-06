@@ -192,14 +192,23 @@ function(PYB11Generator_add_module package_name)
                     OUTPUT_NAME  ${${package_name}_MODULE}
                     CLEAR_PREFIX ${BUILD_SHARED_LIB}
                     SHARED       ${BUILD_SHARED_LIB})
-    target_link_libraries(${${package_name}_MODULE} PRIVATE pybind11::module pybind11::lto pybind11::windows_extras)
+    target_link_libraries(${${package_name}_MODULE} PRIVATE pybind11::module pybind11::windows_extras)
+    #target_link_libraries(${${package_name}_MODULE} PRIVATE pybind11::module pybind11::lto pybind11::windows_extras)
     #pybind11_extension(${${package_name}_MODULE})
-    if(NOT MSVC AND NOT ${CMAKE_BUILD_TYPE} MATCHES Debug|RelWithDebInfo)
+    if (NOT MSVC AND
+        NOT ${CMAKE_BUILD_TYPE} MATCHES Debug|RelWithDebInfo AND
+        "${BUILD_SHARED_LIB}" STREQUAL "ON")
       # Strip unnecessary sections of the binary on Linux/macOS
       pybind11_strip(${${package_name}_MODULE})
+      # add_custom_command(TARGET ${${package_name}_MODULE} POST_BUILD
+      #                COMMAND pybind11_strip(${${package_name}_MODULE})
+      #                #COMMAND ${CMAKE_STRIP} $<TARGET_FILE:your_target_name>
+      #                COMMENT "Stripping debug symbols from the binary.")
     endif()
-    set_target_properties(${${package_name}_MODULE} PROPERTIES CXX_VISIBILITY_PRESET "hidden"
-                                                               CUDA_VISIBILITY_PRESET "hidden")
+    set_target_properties(${${package_name}_MODULE} PROPERTIES
+      CXX_VISIBILITY_PRESET hidden
+      CUDA_VISIBILITY_PRESET hidden
+      visibility_inlines_hidden ON)
 
   else()
     # Build using the normal pybind11 rules
@@ -223,6 +232,19 @@ function(PYB11Generator_add_module package_name)
   endif()    
 
   target_compile_options(${${package_name}_MODULE} PRIVATE ${${package_name}_COMPILE_OPTIONS})
+
+  # # Force no optimization for PYB11 targets
+  # target_compile_options(${${package_name}_MODULE} PRIVATE
+  #   $<$<CONFIG:Release>:-O0 -g>
+  # )
+  # target_link_options(${${package_name}_MODULE} PRIVATE
+  #   $<$<CONFIG:Release>:-O0 -g>
+  # )
+
+  # Remove and link-time optimization being thrown in the flags
+  set_target_properties(${${package_name}_MODULE} PROPERTIES
+    INTERPROCEDURAL_OPTIMIZATION OFF
+  )
 
   # Installation
   if (NOT ${${package_name}_INSTALL} STREQUAL "OFF")
