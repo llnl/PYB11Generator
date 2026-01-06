@@ -200,15 +200,11 @@ function(PYB11Generator_add_module package_name)
         "${BUILD_SHARED_LIB}" STREQUAL "ON")
       # Strip unnecessary sections of the binary on Linux/macOS
       pybind11_strip(${${package_name}_MODULE})
-      # add_custom_command(TARGET ${${package_name}_MODULE} POST_BUILD
-      #                COMMAND pybind11_strip(${${package_name}_MODULE})
-      #                #COMMAND ${CMAKE_STRIP} $<TARGET_FILE:your_target_name>
-      #                COMMENT "Stripping debug symbols from the binary.")
     endif()
     set_target_properties(${${package_name}_MODULE} PROPERTIES
-      CXX_VISIBILITY_PRESET hidden
-      CUDA_VISIBILITY_PRESET hidden
-      visibility_inlines_hidden ON)
+                          CXX_VISIBILITY_PRESET hidden
+                          CUDA_VISIBILITY_PRESET hidden
+                          visibility_inlines_hidden ON)
 
   else()
     # Build using the normal pybind11 rules
@@ -241,7 +237,7 @@ function(PYB11Generator_add_module package_name)
   #   $<$<CONFIG:Release>:-O0 -g>
   # )
 
-  # Remove and link-time optimization being thrown in the flags
+  # Remove any link-time optimization being thrown in the flags
   set_target_properties(${${package_name}_MODULE} PROPERTIES
     INTERPROCEDURAL_OPTIMIZATION OFF
   )
