@@ -34,6 +34,7 @@
 #                             HOLDER_TYPE      ...
 #                             IS_SUBMODULE     ON/OFF
 #                             SUBMODULES       ...
+#                             build_shared_lib ON/OFF
 #                             USE_BLT          ON/OFF
 #                             PYTHONPATH       ...
 #                             ALLOW_SKIPS      ON/OFF)
@@ -82,6 +83,10 @@
 #       SUBMODULES ...
 #           default: ""
 #           Optional CMake list of submodules to be defined as part of this module
+#       BUILD_SHARED_LIB ... ON/OFF
+#           default: ON
+#           Only applies when building a submodule.  If building a submodule it is possible
+#           to choose to build that submodule library as a static library by setting OFF.
 #       USE_BLT ON/OFF (optional, default OFF)
 #           For those using the BLT Cmake extension (https://llnl-blt.readthedocs.io/),
 #           which does not play well with standard CMake add_library options.
@@ -118,7 +123,7 @@ function(PYB11Generator_add_module package_name)
 
   # Define our arguments
   set(options )
-  set(oneValueArgs   MODULE SOURCE INSTALL MULTIPLE_FILES GENERATED_FILES HOLDER_TYPE IS_SUBMODULE USE_BLT ALLOW_SKIPS)
+  set(oneValueArgs   MODULE SOURCE INSTALL MULTIPLE_FILES GENERATED_FILES HOLDER_TYPE IS_SUBMODULE BUILD_SHARED_LIB USE_BLT ALLOW_SKIPS)
   set(multiValueArgs INCLUDES LINKS DEPENDS PYBIND11_OPTIONS COMPILE_OPTIONS EXTRA_SOURCE SUBMODULES PYTHONPATH)
   cmake_parse_arguments(${package_name} "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -139,11 +144,15 @@ function(PYB11Generator_add_module package_name)
     set(${package_name}_SUBMODULES "")
   endif()
   
-  if (${package_name}_IS_SUBMODULE)
-    set(BUILD_SHARED_LIB OFF)
-    list(APPEND ${package_name}_COMPILE_OPTIONS "-fPIC")
+  if (DEFINED ${package_name}_BUILD_SHARED_LIB)
+    set(BUILD_SHARED_LIB ${${package_name}_BUILD_SHARED_LIB})
   else()
-    set(BUILD_SHARED_LIB ON)
+    if (${package_name}_IS_SUBMODULE)
+      set(BUILD_SHARED_LIB OFF)
+      list(APPEND ${package_name}_COMPILE_OPTIONS "-fPIC")
+    else()
+      set(BUILD_SHARED_LIB ON)
+    endif()
   endif()
 
   # Add any submodule targets to our links
@@ -192,7 +201,7 @@ function(PYB11Generator_add_module package_name)
                     OUTPUT_NAME  ${${package_name}_MODULE}
                     CLEAR_PREFIX ${BUILD_SHARED_LIB}
                     SHARED       ${BUILD_SHARED_LIB})
-    target_link_libraries(${${package_name}_MODULE} PRIVATE pybind11::module pybind11::windows_extras)
+    target_link_libraries(${${package_name}_MODULE} PRIVATE ${${package_name}_LINKS} pybind11::module pybind11::windows_extras)
     #target_link_libraries(${${package_name}_MODULE} PRIVATE pybind11::module pybind11::lto pybind11::windows_extras)
     #pybind11_extension(${${package_name}_MODULE})
     if (NOT MSVC AND
