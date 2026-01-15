@@ -27,6 +27,7 @@
 #                             INCLUDES         ...
 #                             LINKS            ...
 #                             DEPENDS          ...
+#                             DEFINES          ...
 #                             PYBIND11_OPTIONS ...
 #                             COMPILE_OPTIONS  ...
 #                             MULTIPLE_FILES   ON/OFF
@@ -34,7 +35,8 @@
 #                             HOLDER_TYPE      ...
 #                             IS_SUBMODULE     ON/OFF
 #                             SUBMODULES       ...
-#                             build_shared_lib ON/OFF
+#                             BUILD_SHARED_LIB ON/OFF
+#                             BUILD_OBJECT_LIB ON/OFF
 #                             USE_BLT          ON/OFF
 #                             PYTHONPATH       ...
 #                             ALLOW_SKIPS      ON/OFF)
@@ -62,6 +64,8 @@
 #       DEPENDS ... (optional)
 #           Any CMake targets that need to be built/satisfied before this module is
 #           built.
+#       DEFINES ... (optional)
+#           A list of define flags to be passed to the CMake lib build
 #       PYBIND11_OPTIONS ... (optional)
 #           Any flags that should be bassed to the pybind11 CMake function
 #           pybind11_add_module.  See documentation at
@@ -87,6 +91,10 @@
 #           default: ON
 #           Only applies when building a submodule.  If building a submodule it is possible
 #           to choose to build that submodule library as a static library by setting OFF.
+#       BUILD_OBJECT_LIB ... ON/OFF
+#           default: OFF
+#           Only applies when building a submodule.  If building a submodule it is possible
+#           to choose to build that submodule library as an object library by setting ON.
 #       USE_BLT ON/OFF (optional, default OFF)
 #           For those using the BLT Cmake extension (https://llnl-blt.readthedocs.io/),
 #           which does not play well with standard CMake add_library options.
@@ -123,8 +131,8 @@ function(PYB11Generator_add_module package_name)
 
   # Define our arguments
   set(options )
-  set(oneValueArgs   MODULE SOURCE INSTALL MULTIPLE_FILES GENERATED_FILES HOLDER_TYPE IS_SUBMODULE BUILD_SHARED_LIB USE_BLT ALLOW_SKIPS)
-  set(multiValueArgs INCLUDES LINKS DEPENDS PYBIND11_OPTIONS COMPILE_OPTIONS EXTRA_SOURCE SUBMODULES PYTHONPATH)
+  set(oneValueArgs   MODULE SOURCE INSTALL MULTIPLE_FILES GENERATED_FILES HOLDER_TYPE IS_SUBMODULE BUILD_SHARED_LIB BUILD_OBJECT_LIB USE_BLT ALLOW_SKIPS)
+  set(multiValueArgs INCLUDES LINKS DEPENDS DEFINES PYBIND11_OPTIONS COMPILE_OPTIONS EXTRA_SOURCE SUBMODULES PYTHONPATH)
   cmake_parse_arguments(${package_name} "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   # Set our names and paths
@@ -193,20 +201,45 @@ function(PYB11Generator_add_module package_name)
 
   # The library build rule
   if (${${package_name}_USE_BLT}) 
+    #--------------------------------------------------------------------------------
     # Build using BLT macros -- assumes you've already included BLT CMake rules
-    blt_add_library(NAME         ${${package_name}_MODULE}
-                    SOURCES      ${GENERATED_FILES_LIST} ${${package_name}_EXTRA_SOURCE}
-                    DEPENDS_ON   ${${package_name}_DEPENDS} ${${package_name}_FILE_DEPENDS}
-                    INCLUDES     ${${package_name}_INCLUDES} ${CMAKE_CURRENT_BINARY_DIR}/current_${${package_name}_MODULE}
-                    OUTPUT_NAME  ${${package_name}_MODULE}
-                    CLEAR_PREFIX ${BUILD_SHARED_LIB}
-                    SHARED       ${BUILD_SHARED_LIB})
-    target_link_libraries(${${package_name}_MODULE} PRIVATE ${${package_name}_LINKS} pybind11::module pybind11::windows_extras)
-    #target_link_libraries(${${package_name}_MODULE} PRIVATE pybind11::module pybind11::lto pybind11::windows_extras)
+    if (${package_name}_IS_SUBMODULE)
+      #................................................................................
+      # Submodule
+      if (${${package_name}_BUILD_OBJECT_LIB})
+        blt_add_library(NAME         ${${package_name}_MODULE}
+                        SOURCES      ${GENERATED_FILES_LIST} ${${package_name}_EXTRA_SOURCE}
+                        DEPENDS_ON   ${${package_name}_DEPENDS} ${${package_name}_FILE_DEPENDS}
+                        DEFINES      ${${package_name}_DEFINES}
+                        INCLUDES     ${${package_name}_INCLUDES} ${CMAKE_CURRENT_BINARY_DIR}/current_${${package_name}_MODULE}
+                        OUTPUT_NAME  ${${package_name}_MODULE}
+                        OBJECT       ON)
+      else()
+        blt_add_library(NAME         ${${package_name}_MODULE}
+                        SOURCES      ${GENERATED_FILES_LIST} ${${package_name}_EXTRA_SOURCE}
+                        DEPENDS_ON   ${${package_name}_DEPENDS} ${${package_name}_FILE_DEPENDS}
+                        DEFINES      ${${package_name}_DEFINES}
+                        INCLUDES     ${${package_name}_INCLUDES} ${CMAKE_CURRENT_BINARY_DIR}/current_${${package_name}_MODULE}
+                        OUTPUT_NAME  ${${package_name}_MODULE}
+                        SHARED       ${BUILD_SHARED_LIB})
+      endif()
+    else()
+      #................................................................................
+      # Module
+      blt_add_library(NAME         ${${package_name}_MODULE}
+                      SOURCES      ${GENERATED_FILES_LIST} ${${package_name}_EXTRA_SOURCE}
+                      DEPENDS_ON   ${${package_name}_DEPENDS} ${${package_name}_FILE_DEPENDS}
+                      DEFINES      ${${package_name}_DEFINES}
+                      INCLUDES     ${${package_name}_INCLUDES} ${CMAKE_CURRENT_BINARY_DIR}/current_${${package_name}_MODULE}
+                      OUTPUT_NAME  ${${package_name}_MODULE}
+                      CLEAR_PREFIX ON
+                      SHARED       ${BUILD_SHARED_LIB})
+    endif()
+    target_link_libraries(${${package_name}_MODULE} PRIVATE ${${package_name}_LINKS} pybind11::module pybind11::windows_extras)  # pybind11::lto 
     #pybind11_extension(${${package_name}_MODULE})
-    if (NOT MSVC AND
-        NOT ${CMAKE_BUILD_TYPE} MATCHES Debug|RelWithDebInfo AND
-        "${BUILD_SHARED_LIB}" STREQUAL "ON")
+    if ((NOT MSVC) AND
+        (NOT ${CMAKE_BUILD_TYPE} MATCHES Debug|RelWithDebInfo) AND
+        (NOT ${${package_name}_IS_SUBMODULE}))
       # Strip unnecessary sections of the binary on Linux/macOS
       pybind11_strip(${${package_name}_MODULE})
     endif()
@@ -252,7 +285,8 @@ function(PYB11Generator_add_module package_name)
   )
 
   # Installation
-  if (NOT ${${package_name}_INSTALL} STREQUAL "OFF")
+  if ((NOT ${${package_name}_INSTALL} STREQUAL "OFF") AND
+      (NOT ${${package_name}_BUILD_OBJECT_LIB}))
     if ("${${package_name}_INSTALL} " STREQUAL " ")
       set(${package_name}_INSTALL ${Python3_SITEARCH}/${package_name})
     endif()
