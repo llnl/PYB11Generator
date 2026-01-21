@@ -61,6 +61,7 @@ The full function specification for ``PYB11Generator_add_module`` is::
                                INCLUDES         ...
                                LINKS            ...
                                DEPENDS          ...
+                               DEFINES          ...
                                PYBIND11_OPTIONS ...
                                COMPILE_OPTIONS  ...
                                MULTIPLE_FILES   ON/OFF
@@ -69,6 +70,8 @@ The full function specification for ``PYB11Generator_add_module`` is::
                                IS_SUBMODULE     ON/OFF
                                SUBMODULES       ...
                                USE_BLT          ON/OFF
+                               BUILD_SHARED_LIB ON/OFF
+                               BUILD_OBJECT_LIB ON/OFF
                                PYTHONPATH       ...
                                ALLOW_SKIPS      ON/OFF)
 
@@ -94,6 +97,9 @@ LINKS <arg1> <arg2> ... (optional) :
 
 DEPENDS <arg1> <arg2> ... (optional) :
   List of targets the extension module depends on, i.e., targets that should be satisfied first.
+
+DEFINES ... (optional) :
+  A list of define flags to be passed to the CMake lib build
 
 PYBIND11_OPTIONS <arg1> <arg2> ... (optional) :
   Any valid flags that can be passed to the built-in pybind11 ``pybind11_add_module`` CMake function.  See pybind11 CMake `documentation <https://pybind11.readthedocs.io/en/stable/compiling.html#building-with-cmake>`_.
@@ -121,6 +127,16 @@ USE_BLT ON/OFF (optional, default OFF) :
   which does not play well with standard CMake add_library options.
   Note, using this option skips using pybind11's own add_module CMake logic,
   and therefore may make some pybind11 options no-ops.
+
+BUILD_SHARED_LIB ... ON/OFF :
+  default: OFF
+  Only applies when building a submodule.  If building a submodule it is possible
+  to choose to build that submodule library as a shared library by setting ON.
+
+BUILD_OBJECT_LIB ... ON/OFF  (Note, currently only available when using BLT) :
+  default: OFF
+  Only applies when building a submodule.  If building a submodule it is possible
+  to choose to build that submodule library as an object library by setting ON.
 
 PYTHONPATH <arg> (optional) :
   Additions needed for the environment PYTHONPATH

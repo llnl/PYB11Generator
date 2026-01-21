@@ -35,9 +35,9 @@
 #                             HOLDER_TYPE      ...
 #                             IS_SUBMODULE     ON/OFF
 #                             SUBMODULES       ...
+#                             USE_BLT          ON/OFF
 #                             BUILD_SHARED_LIB ON/OFF
 #                             BUILD_OBJECT_LIB ON/OFF
-#                             USE_BLT          ON/OFF
 #                             PYTHONPATH       ...
 #                             ALLOW_SKIPS      ON/OFF)
 #   where arguments are:
@@ -87,19 +87,19 @@
 #       SUBMODULES ...
 #           default: ""
 #           Optional CMake list of submodules to be defined as part of this module
-#       BUILD_SHARED_LIB ... ON/OFF
-#           default: ON
-#           Only applies when building a submodule.  If building a submodule it is possible
-#           to choose to build that submodule library as a static library by setting OFF.
-#       BUILD_OBJECT_LIB ... ON/OFF
-#           default: OFF
-#           Only applies when building a submodule.  If building a submodule it is possible
-#           to choose to build that submodule library as an object library by setting ON.
 #       USE_BLT ON/OFF (optional, default OFF)
 #           For those using the BLT Cmake extension (https://llnl-blt.readthedocs.io/),
 #           which does not play well with standard CMake add_library options.
 #           Note, using this option skips using pybind11's own add_module CMake logic,
 #           and therefore may make some pybind11 options no-ops.
+#       BUILD_SHARED_LIB ... ON/OFF
+#           default: OFF
+#           Only applies when building a submodule.  If building a submodule it is possible
+#           to choose to build that submodule library as a shared library by setting ON
+#       BUILD_OBJECT_LIB ... ON/OFF  (Note, currently only available when using BLT)
+#           default: OFF
+#           Only applies when building a submodule.  If building a submodule it is possible
+#           to choose to build that submodule library as an object library by setting ON.
 #       PYTHONPATH ... (optional)
 #           Additions needed for the environment PYTHONPATH
 #       ALLOW_SKIPS  ON/OFF (optional, default OFF)
