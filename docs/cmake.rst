@@ -99,7 +99,7 @@ DEPENDS <arg1> <arg2> ... (optional) :
   List of targets the extension module depends on, i.e., targets that should be satisfied first.
 
 DEFINES ... (optional) :
-  A list of define flags to be passed to the CMake lib build
+  A list of define flags to be passed to the CMake lib build. See CMake documentation for `target_compile_definitions <https://cmake.org/cmake/help/latest/command/target_compile_definitions.html>`_.
 
 PYBIND11_OPTIONS <arg1> <arg2> ... (optional) :
   Any valid flags that can be passed to the built-in pybind11 ``pybind11_add_module`` CMake function.  See pybind11 CMake `documentation <https://pybind11.readthedocs.io/en/stable/compiling.html#building-with-cmake>`_.
