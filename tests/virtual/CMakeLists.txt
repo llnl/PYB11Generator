@@ -1,0 +1,1 @@
+PYB11Generator_add_module(pair_return_type INSTALL ${CMAKE_INSTALL_PREFIX}/tests/pair_return_type)

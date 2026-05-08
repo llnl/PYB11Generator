@@ -29,6 +29,7 @@ if (ENABLE_DOCS)
 endif()
 
 # Tests
+add_subdirectory(tests/virtual)
 add_subdirectory(tests/cross_module)
 add_subdirectory(tests/inheritance)
 add_subdirectory(tests/protected)
