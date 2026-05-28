@@ -13,6 +13,17 @@ def PYB11ignore(thing):
     return thing
 
 #-------------------------------------------------------------------------------
+# ignoreTest : allow functions of attrs to test if method should be ignored
+#-------------------------------------------------------------------------------
+class PYB11ignoreTest:
+    def __init__(self, func):
+        self.func = func
+        return
+    def __call__(self, thing):
+        thing.PYB11ignoreTest = self.func
+        return thing
+
+#-------------------------------------------------------------------------------
 # template
 #-------------------------------------------------------------------------------
 class PYB11template:

@@ -616,7 +616,7 @@ def PYB11generateClass(modobj, klass, klassattrs, ssout,
 
     # Grab all the methods
     allmethods = [(mname, meth) for (mname, meth) in PYB11ThisClassMethods(klass)
-                  if not PYB11attrs(meth)["ignore"]]
+                  if not PYB11ignoreMethod(meth, klassattrs)]
 
     # Bind constructors of the class.
     ss("\n  // Constructors\n")
@@ -722,7 +722,7 @@ def PYB11generateClass(modobj, klass, klassattrs, ssout,
                 bcppname = bcppname % Tdict
                 bklassattrs["cppname"] = bcppname
             for mname, meth in PYB11ThisClassMethods(bklass):
-                if ((not PYB11attrs(meth)["ignore"]) and                # Ignore the method?
+                if ((not PYB11ignoreMethod(meth, bklassattrs)) and      # Ignore the method?
                     (mname[:6] != "pyinit") and                         # Ignore constructors
                     newOverloadedMethod(meth, allmethods, klassattrs)): # New overload?
                     methattrs = PYB11attrs(meth)
@@ -760,7 +760,7 @@ def PYB11generateClass(modobj, klass, klassattrs, ssout,
             bcppname = bcppname % Tdict
             bklassattrs["cppname"] = bcppname
         for mname, meth in PYB11ThisClassMethods(bklass):
-            if ((not PYB11attrs(meth)["ignore"]) and                      # Ignore the method?
+            if ((not PYB11ignoreMethod(meth, bklassattrs)) and            # Ignore the method?
                 newVirtualMethod(mname, meth, allmethods, klassattrs)):   # new virtual?
                 methattrs = PYB11attrs(meth)
                 PYB11generic_class_method(bklass, bklassattrs, meth, methattrs, ss)
