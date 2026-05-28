@@ -471,6 +471,15 @@ def PYB11modmatch(modobj, amodname):
     return modobj.PYB11modulename.split(".")[-1] == amodname.split(".")[-1]
 
 #-------------------------------------------------------------------------------
+# Test if we should ignore a method
+#-------------------------------------------------------------------------------
+def PYB11ignoreMethod(meth, klassattrs):
+    methattrs = PYB11attrs(meth)
+    if methattrs["ignore"]:
+        return True
+    return methattrs["ignoreTest"](methattrs, klassattrs)
+
+#-------------------------------------------------------------------------------
 # PYB11attrs
 #
 # Read the possible PYB11 generation attributes from the obj
@@ -480,6 +489,7 @@ def PYB11attrs(obj):
          "cppname"               : obj.__name__,
          "pynamebase"            : obj.__name__,
          "ignore"                : False,
+         "ignoreTest"            : (lambda meth_attrs, klass_attrs: False),
          "namespace"             : "",
          "singleton"             : False,
          "holder"                : PYB11config().default_holder_type,
