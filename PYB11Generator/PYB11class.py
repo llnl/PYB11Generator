@@ -315,7 +315,7 @@ def PYB11generic_class_method(klass, klassattrs, meth, methattrs, ss):
         argString += ', "%s"_a' % argName
         if methattrs["noconvert"]:
             argString += '.noconvert()'
-        if default:
+        if not (default is None):
             argString += "=%s" % default
 
     # If there is an implementation, short-circuit the rest.
@@ -402,7 +402,7 @@ def PYB11generateClass(modobj, klass, klassattrs, ssout,
                 argString += ', "%s"_a' % argName
                 if methattrs["noconvert"]:
                     argString += '.noconvert()'
-                if default:
+                if not (default is None):
                     argString += "=%s" % default
             ss(">()%s" % argString)
         doc = inspect.getdoc(meth)
@@ -457,7 +457,7 @@ def PYB11generateClass(modobj, klass, klassattrs, ssout,
                 argString += ', "%s"_a' % argName
                 if methattrs["noconvert"]:
                     argString += '.noconvert()'
-                if default:
+                if not (default is None):
                     argString += "=%s" % default
             if methattrs["const"]:
                 ss((") const) &%(namespace)s%(cppname)s::operator()" % klassattrs) + argString)
