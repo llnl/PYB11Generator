@@ -1,4 +1,4 @@
-Version vYYYY.MM.p -- Release date YYYY-MM-DD
+Version v2026.05.0 -- Release date 2026-05-29
 ==============================================
   * Important Notes:
 
@@ -9,5 +9,17 @@ Notable changes include:
 
   * Bug fixes:
     * Fixed bug in generating default arguments (checking for None rather than straight if test).
+
+  * Build changes / improvements:
+
+Version vYYYY.MM.p -- Release date YYYY-MM-DD
+==============================================
+  * Important Notes:
+
+Notable changes include:
+
+  * New features / API changes:
+
+  * Bug fixes:
 
   * Build changes / improvements:

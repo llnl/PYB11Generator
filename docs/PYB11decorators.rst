@@ -14,7 +14,11 @@ PYB11 decorators
 
   Similar to PYB11ignore, except this form allows the user to pass a function (typically a Python lambda) that can actively test at generation time if the method should be ignored. 
 
-  The function passed to ``@PYB11ignoreTest`` is typically of the form ``lambda meth_attrs, klass_attrs: <function body>``, where ``meth_attrs`` are PYB11 attributes associated with the method and ``klass_attrs`` are those associated with the enclosing class.
+  The function passed to ``@PYB11ignoreTest`` is typically of the form::
+
+    lambda meth_attrs, klass_attrs: <function body>
+
+  where ``meth_attrs`` are PYB11 attributes associated with the method and ``klass_attrs`` are those associated with the enclosing class.
 
   See the discussion in :ref:`dynamic_ignore_methods` for an example and further discussion.
 
