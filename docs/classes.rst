@@ -796,3 +796,36 @@ We can create PYB11Generator instantiations of this class for ``double`` and ``f
 Just as is the case with template functions, classes decorated with ``@PYB11template`` are implicitly ignored by PYB11Generator until an instantiation is created with :func:`PYB11TemplateClass`.  Additionally, template parameters specified in ``@PYB11template`` become named patterns which can be substituted with the types used to instantiate the templates.  So, in the ``Vector`` example above, ``%(Scalar)s`` becomes ``float`` in the first instantiation and ``double`` in the second.  See :func:`PYB11template` and :func:`PYB11TemplateClass` for further details.
 
 Complications can arise with inheritance of templated classes, particularly if the template parameters change between the base and descendant types.  See the discussion in :ref:`non-template-to-template-inheritance` and :ref:`template_class_inheritance_changes` for further details.
+
+.. _dynamic_ignore_methods:
+
+------------------------------------------------------------
+Ignoring methods at generation time for particular instances
+------------------------------------------------------------
+
+In some special cases there are methods of C++ classes that are not always valid. For instance, C++20 allows the programmer to specify ``require`` on some methods to test against template parameters and selectively allow/disallow such methods for particular template choices. Consider a class representing a geometric vector that wants to provide a cross product method only for the three dimensional case. In C++20 we can represent this as:
+
+.. code-block:: cpp
+
+   template<int ndim>
+   class Vector {
+
+     Vector cross_product(const Vector& rhs) const requires (ndim == 3);
+
+   };
+
+We would like to wrap this class for use in Python, but only expose the ``Vector::cross_product`` method for the ``ndim=3`` (three-dimensional) case. We can accomplish this with PYB11Generator code using a templated class definition and impose a ``@PYB11ignoreTest`` test condition on the ``cross_product`` binding::
+
+  @PYB11template("ndim")
+  class Vector:
+
+      @PYB11ignoreTest(lambda meth_attrs, klass_attrs: klass_attrs["template_dict"]["ndim"] != "3")
+      @PYB11const
+      def cross_product(self):
+          "cross product with another vector"
+
+The ``@PYB11ignoreTest`` decorator allows us to specify a Python function that conditionally imposes the ignore condition on the decorated method. This function will be called with two arguments: ``meth_attrs`` is the dictionary of PYB11 attributes associated with the method; ``klass_attrs`` is the dictionary of attributes assigned to the enclosing class.  In this case we test the value of the ``ndim`` parameter the class is instantiated with, and skip this method unless ``ndim == "3"``.
+
+You can see the set of attributes available to check by examining the PYB11attrs method in the source file ``PYB11utils.py`` in the PYB11Generator source.
+
+        

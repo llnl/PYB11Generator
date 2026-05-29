@@ -10,6 +10,15 @@ PYB11 decorators
   Specifies that the decorated object should be ignored by PYB11Generator, i.e., not processed to produce any pybind11 binding output.
 
 .. #############################################################################
+.. decorator:: PYB11ignoreTest
+
+  Similar to PYB11ignore, except this form allows the user to pass a function (typically a Python lambda) that can actively test at generation time if the method should be ignored. 
+
+  The function passed to ``@PYB11ignoreTest`` is typically of the form ``lambda meth_attrs, klass_attrs: <function body>``, where ``meth_attrs`` are PYB11 attributes associated with the method and ``klass_attrs`` are those associated with the enclosing class.
+
+  See the discussion in :ref:`dynamic_ignore_methods` for an example and further discussion.
+
+.. #############################################################################
 .. decorator:: PYB11template("type1", "type2", ...)
 
   Indicates the object should be treated as a C++ template.  Accepts any number of strings which represent the names of the template arguments.
