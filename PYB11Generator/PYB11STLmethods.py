@@ -37,6 +37,17 @@ class PYB11_bind_vector:
             else:
                 ss('false)')
         ss(');\n')
+        # https://pybind11.readthedocs.io/en/stable/advanced/classes.html#implicit-conversions
+        # The destination class must be bound before registering implicit conversions.
+        #
+        # https://github.com/pybind/pybind11/issues/1940
+        # https://stackoverflow.com/questions/58169847/mixing-type-conversions-and-opaque-types-with-pybind11
+        # The discussions show implicit list inputs for opaque, bound vectors.
+        # The optional project hook can register such conversions after bind_vector
+        # has created the vector's Python class.
+        ss('#ifdef PYB11_VECTOR_BINDING_HOOK\n')
+        ss('  PYB11_VECTOR_BINDING_HOOK<std::vector<' + self.element + '>>();\n')
+        ss('#endif\n')
         return
 
 #-------------------------------------------------------------------------------
