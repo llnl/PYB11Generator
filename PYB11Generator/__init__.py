@@ -130,6 +130,12 @@ def PYB11generateModuleStart(modobj):
 #include <pybind11/operators.h>
 #include <pybind11/native_enum.h>
 
+// A shared header owns all opaque/custom type_caster definitions when selected by the build.
+// Include it before user headers, preambles, or binding code can instantiate them.
+#ifdef PYB11_SHARED_TYPE_CASTER_HEADER
+#include PYB11_SHARED_TYPE_CASTER_HEADER
+#endif
+
 namespace py = pybind11;
 using namespace pybind11::literals;
 """)
@@ -165,6 +171,9 @@ using namespace pybind11::literals;
             obj.PYB11preamble(modobj, ss, objname)
 
         # Does anyone have any opaque types?
+        # Shared policies replace local definitions to avoid redefining an
+        # explicit type_caster specialization within the same translation unit.
+        ss("#ifndef PYB11_SHARED_TYPE_CASTER_HEADER\n")
         if hasattr(modobj, "PYB11opaque"):
             ss("""//------------------------------------------------------------------------------
 // Opaque type definitions
@@ -175,7 +184,7 @@ using namespace pybind11::literals;
             ss("\n")
         for objname, obj in PYB11objsWithMethod(modobj, "PYB11opaqueTypes"):
             obj.PYB11opaqueTypes(modobj, ss, objname)
-        ss("\n")
+        ss("#endif  // PYB11_SHARED_TYPE_CASTER_HEADER\n\n")
 
         # Forward declare functions we use for multiple file bindings
         ss("""//------------------------------------------------------------------------------
