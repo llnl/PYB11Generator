@@ -352,9 +352,11 @@ def PYB11generic_class_method(klass, klassattrs, meth, methattrs, ss):
 
     # Is there a keep_alive policy?
     if methattrs["keepalive"]:
-        assert isinstance(methattrs["keepalive"], tuple)
-        assert len(methattrs["keepalive"]) == 2
-        ss(", py::keep_alive<%i, %i>()" % methattrs["keepalive"])
+        assert isinstance(methattrs["keepalive"], list)
+        for stuff in methattrs["keepalive"]:
+            assert isinstance(stuff, tuple)
+            assert len(stuff) == 2
+            ss(", py::keep_alive<%i, %i>()" % stuff)
 
     # Write the doc string
     doc = inspect.getdoc(meth)
@@ -679,6 +681,13 @@ def PYB11generateClass(modobj, klass, klassattrs, ssout,
     # Helper method to check if the given method spec is already in allmethods
     def newOverloadedMethod(meth, allmethods, klassattrs):
         methattrs = PYB11attrs(meth)
+        # Python operator specifications such as __eq__ are translated to C++
+        # expressions above: they are not actual C++ methods named __eq__.
+        # They therefore cannot be exposed through the ordinary base-overload
+        # path.  If a derived class supplies an implementation for the same
+        # Python operator, that implementation completely handles the binding.
+        if methattrs["pyname"] in special_operators:
+            return False
         args = extractArgs(meth)
         overload = False
         for (othername, othermeth) in allmethods:
